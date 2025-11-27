@@ -21,6 +21,62 @@
 - kubectl 配置和集群访问权限
 - NFS 服务器 (192.168.28.30:/data/nfs-sc)
 - Docker 镜像仓库访问
+### 必需的基础组件
+
+在部署本项目前，请确保您的 Kubernetes 集群已安装以下基础组件：
+#### 1. NFS 客户端 Provisioner（可选但推荐）
+如果您的集群没有可用的默认 StorageClass，本项目包含 NFS Provisioner 的部署配置：
+```bash
+# 项目已包含 NFS Provisioner 部署文件
+kubectl apply -f 4-rbac.yaml
+kubectl apply -f 5-deployment.yaml
+kubectl apply -f 6-sc.yaml
+```
+#### 2. Ingress Controller（可选）
+
+如需使用 Ingress 而非 NodePort 暴露服务，请预先安装 Ingress Controller：
+**Nginx Ingress Controller:**
+
+```bash
+# 使用 Helm 安装
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+
+# 或使用 kubectl 安装
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+```
+#### 3. 可用的 StorageClass
+
+确保集群有可用的 StorageClass 用于动态存储供应：
+```bash
+# 检查现有 StorageClass
+kubectl get storageclass
+
+# 如果需要，设置默认 StorageClass
+kubectl patch storageclass <your-storage-class> -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+注意：如果使用项目内置的 NFS Provisioner，将自动创建名为 `nfs-client` 的 StorageClass。
+```
+### 网络要求
+
+- 集群节点与 NFS 服务器之间的网络连通性
+- 如使用 NodePort，确保防火墙允许访问 32048、32049 端口
+- 集群内 DNS 服务正常运作（用于服务发现）
+    
+### 验证集群状态
+
+在部署前，建议验证集群基础功能：
+
+```bash
+# 检查节点状态
+kubectl get nodes
+
+# 检查核心服务状态
+kubectl get pods -n kube-system
+
+# 检查网络连通性
+kubectl run test-pod --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default.svc.cluster.local
+```
 
 ### 资源要求
 
