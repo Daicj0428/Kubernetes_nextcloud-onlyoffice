@@ -7,9 +7,9 @@ nextcloud   NodePort   10.100.178.30   <none>        80:32048/TCP   3d19h
 [root@master-0 ~]# 
 ```
 ##### 2、浏览器中访问，并使用管理员用户登录
-![[study/kubernetes/相关配图/Pasted image 20251126172418.png]]
+
 ##### 3、点击搜索，并选择‘下载并启用’按钮
-![[study/kubernetes/相关配图/Pasted image 20251126155944.png]]
+
 ###### 若出现报错：
 
 `cURL error 56: OpenSSL SSL_read: Connection reset by peer, errno 104 (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://github.com/ONLYOFFICE/onlyoffice-nextcloud/releases/download/v7.4.8/onlyoffice.tar.gz` 尝试前往nextcloud pod中手动进行安装，步骤如下：
@@ -309,7 +309,6 @@ service/onlyoffice-document-server-external   NodePort    10.108.193.223   <none
 ```
 
 **查看是否能正常访问Onlyoffice**
-![[study/kubernetes/相关配图/Pasted image 20251126155209.png]]
 
 ###### 3、更新nextcloud配置
 
@@ -426,47 +425,9 @@ deployment.apps/onlyoffice-document-server restarted
 ```
 
 ##### 5、UI界面手动添加Onlyoffice配置
-
-![[study/kubernetes/相关配图/Pasted image 20251126154853.png]]
+    - **Document Editing Service address**: `http://<节点IP>:32049`
+    - **Secret key**: `onlyoffice-secret-key-2024`
+    - **内部地址**: `http://onlyoffice-document-server.nextcloud.svc.cluster.local`
+    - **存储地址**: `http://<节点IP>:32048`
 
 ##### 6、新建DOC文档测试
-![[study/kubernetes/相关配图/Pasted image 20251126155420.png]]
-
-![[study/kubernetes/相关配图/Pasted image 20251126155353.png]]
-#### 共享onlyoffice应用
-[[study/Cpolar/Cpolar内网穿透|Cpolar内网穿透]]
-```bash
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ config:app:set onlyoffice documentserver_url --value='http://4beae16d.r20.cpolar.top/'"
-Config value documentserver_url for app onlyoffice set to http://4beae16d.r20.cpolar.top/
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ config:app:get onlyoffice documentserver_url"
-http://4beae16d.r20.cpolar.top/
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ onlyoffice:documentserver --check"
-Document server http://onlyoffice-stable:32049/ version 7.4.1.36 is successfully connected
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ config:system:get trusted_domains"
-192.168.28.23:32048
-46085b96.r20.cpolar.top
-onlyoffice-document-server
-nextcloud
-nextcloud.nextcloud.svc.cluster.local
-onlyoffice-document-server.nextcloud.svc.cluster.local
-nextcloud.nextcloud.svc.cluster.local
-192.168.28.23
-192.168.28.23:32048
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ config:system:set trusted_domains 9 --value='4beae16d.r20.cpolar.top'"
-System config value trusted_domains => 9 set to string 4beae16d.r20.cpolar.top
-[root@master-0 onlyoffice]# kubectl exec -n nextcloud nextcloud-6b4fcc694d-5ms9f -- su www-data -s /bin/bash -c "php occ config:system:get trusted_domains"
-192.168.28.23:32048
-46085b96.r20.cpolar.top
-onlyoffice-document-server
-nextcloud
-nextcloud.nextcloud.svc.cluster.local
-onlyoffice-document-server.nextcloud.svc.cluster.local
-nextcloud.nextcloud.svc.cluster.local
-192.168.28.23
-192.168.28.23:32048
-4beae16d.r20.cpolar.top
-[root@master-0 onlyoffice]# 
-```
-
-##### 更新UI界面onlyoffice配置
-![[study/kubernetes/相关配图/Pasted image 20251126170437.png]]
