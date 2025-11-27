@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: onlyoffice-document-server-external
+  namespace: nextcloud
+spec:
+  type: NodePort
+  selector:
+    app: onlyoffice-document-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 32049

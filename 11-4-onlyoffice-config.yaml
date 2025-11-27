@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: onlyoffice-config
+  namespace: nextcloud
+data:
+  onlyoffice.json: |
+    {
+      "stores": [
+        {
+          "onlyoffice": {
+            "args": {
+              "url": "http://onlyoffice-document-server",
+              "verify_peer_off": true,
+              "jwt_secret": "onlyoffice-secret-key-2024",
+              "jwt_header": "Authorization",
+              "timeout": 120,
+              "conversionTimeout": 120,
+              "max_download_size": 10485760,
+              "max_upload_size": 10485760
+            }
+          }
+        }
+      ]
+    }

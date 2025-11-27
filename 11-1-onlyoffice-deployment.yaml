@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onlyoffice-document-server
+  namespace: nextcloud
+  labels:
+    app: onlyoffice-document-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onlyoffice-document-server
+  template:
+    metadata:
+      labels:
+        app: onlyoffice-document-server
+    spec:
+      # 移除 initContainer，因为权限问题需要在主容器中处理
+      containers:
+      - name: onlyoffice-document-server
+        image: onlyoffice/documentserver:7.4.1
+        # 使用 root 用户运行以解决权限问题
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        env:
+        - name: JWT_ENABLED
+          value: "true"
+        - name: JWT_SECRET
+          value: "onlyoffice-secret-key-2024"
+        # 添加环境变量以帮助调试
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 80
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: onlyoffice-data
+          mountPath: /var/www/onlyoffice/Data
+        - name: onlyoffice-logs
+          mountPath: /var/log/onlyoffice
+        - name: onlyoffice-db
+          mountPath: /var/lib/postgresql
+        - name: onlyoffice-rabbitmq
+          mountPath: /var/lib/rabbitmq
+        - name: onlyoffice-redis
+          mountPath: /var/lib/redis
+      volumes:
+      - name: onlyoffice-data
+        persistentVolumeClaim:
+          claimName: onlyoffice-data-pvc
+      - name: onlyoffice-logs
+        persistentVolumeClaim:
+          claimName: onlyoffice-logs-pvc
+      - name: onlyoffice-db
+        persistentVolumeClaim:
+          claimName: onlyoffice-db-pvc
+      - name: onlyoffice-rabbitmq
+        persistentVolumeClaim:
+          claimName: onlyoffice-rabbitmq-pvc
+      - name: onlyoffice-redis
+        persistentVolumeClaim:
+          claimName: onlyoffice-redis-pvc
