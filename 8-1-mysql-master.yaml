@@ -11,7 +11,7 @@ data:
     binlog_format=ROW
     expire_logs_days=3
     max_binlog_size=50M
-    innodb_buffer_pool_size=512M  # 从 256M 增加到 512M
+    innodb_buffer_pool_size=512M  
     character-set-server=utf8mb4
     collation-server=utf8mb4_unicode_ci
     default-storage-engine=INNODB
@@ -23,13 +23,11 @@ data:
     skip-host-cache
     skip-slave-start
     
-    # 增加排序缓冲区大小
     sort_buffer_size=2M
     read_buffer_size=2M
     read_rnd_buffer_size=2M
     join_buffer_size=2M
     
-    # 临时表设置
     tmp_table_size=64M
     max_heap_table_size=64M
     
@@ -99,7 +97,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "2Gi"
-        # 改进的健康检查
         startupProbe:
           exec:
             command:
@@ -142,7 +139,7 @@ metadata:
   name: mysql-master
   namespace: nextcloud
 spec:
-  clusterIP: None  # Headless 服务
+  clusterIP: None  
   ports:
   - port: 3306
     targetPort: 3306
