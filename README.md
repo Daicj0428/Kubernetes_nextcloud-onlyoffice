@@ -13,6 +13,9 @@
 - **健康检查**: 完整的应用健康监控
 - **分步部署**: 支持检查点的可靠部署流程
 
+## 整体架构
+<img width="2189" height="1381" alt="image" src="https://github.com/user-attachments/assets/2ac04725-2ad6-4923-a7e1-bf458af1444f" />
+
 ## 📋 前置要求
 
 ### 系统要求
