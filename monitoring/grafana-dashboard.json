@@ -1,0 +1,207 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "nextcloud-monitor",
+    "title": "Nextcloud 监控仪表盘",
+    "style": "dark",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "tags": ["nextcloud", "mysql", "redis", "prometheus"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "MySQL 连接数",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {"min": 0}
+        },
+        "targets": [
+          {
+            "expr": "mysql_global_status_threads_connected",
+            "legendFormat": "已连接"
+          },
+          {
+            "expr": "mysql_global_status_threads_running",
+            "legendFormat": "运行中"
+          },
+          {
+            "expr": "mysql_global_variables_max_connections",
+            "legendFormat": "最大连接"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "MySQL QPS",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "fieldConfig": {
+          "defaults": {"min": 0, "unit": "reqps"}
+        },
+        "targets": [
+          {"expr": "rate(mysql_global_status_questions[5m]) or on() vector(0)", "legendFormat": "Questions"},
+          {"expr": "rate(mysql_global_status_com_select[5m]) or on() vector(0)", "legendFormat": "SELECT"},
+          {"expr": "rate(mysql_global_status_com_insert[5m]) or on() vector(0)", "legendFormat": "INSERT"},
+          {"expr": "rate(mysql_global_status_com_update[5m]) or on() vector(0)", "legendFormat": "UPDATE"},
+          {"expr": "rate(mysql_global_status_com_delete[5m]) or on() vector(0)", "legendFormat": "DELETE"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "MySQL Buffer Pool 命中率",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {"min": 0, "max": 1, "decimals": 2, "unit": "percentunit"}
+        },
+        "targets": [
+          {"expr": "1 - (rate(mysql_global_status_innodb_buffer_pool_reads[5m]) / rate(mysql_global_status_innodb_buffer_pool_read_requests[5m])) or vector(0)", "legendFormat": "命中率"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "MySQL 慢查询",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {"expr": "mysql_global_status_slow_queries or vector(0)"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Redis 内存使用",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
+        "fieldConfig": {
+          "defaults": {"min": 0, "unit": "bytes"}
+        },
+        "targets": [
+          {"expr": "redis_used_memory_bytes", "legendFormat": "已用"},
+          {"expr": "redis_maxmemory_bytes", "legendFormat": "上限"}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Redis 键数量",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 8},
+        "fieldConfig": {
+          "defaults": {"min": 0}
+        },
+        "targets": [
+          {"expr": "redis_db_keys{db=\"db0\"}", "legendFormat": "db0"},
+          {"expr": "redis_db_keys{db=\"db1\"}", "legendFormat": "db1"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Redis 连接数",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 8},
+        "fieldConfig": {
+          "defaults": {"min": 0}
+        },
+        "targets": [
+          {"expr": "redis_connected_clients", "legendFormat": "客户端"},
+          {"expr": "redis_blocked_clients", "legendFormat": "阻塞"}
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Redis 命令速率",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 8},
+        "fieldConfig": {
+          "defaults": {"min": 0, "unit": "ops"}
+        },
+        "targets": [
+          {"expr": "rate(redis_commands_processed_total[5m]) or on() vector(0)", "legendFormat": "commands/s"}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Nextcloud 状态",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {"expr": "nextcloud_up or vector(0)"}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Nextcloud 用户数",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+        "fieldConfig": {
+          "defaults": {"decimals": 0}
+        },
+        "targets": [
+          {"expr": "nextcloud_users_total or vector(0)"}
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Nextcloud 存储使用",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 16},
+        "fieldConfig": {
+          "defaults": {"decimals": 0, "unit": "bytes"}
+        },
+        "targets": [
+          {"expr": "nextcloud_storage_bytes or vector(0)"}
+        ]
+      },
+      {
+        "id": 12,
+        "title": "服务健康概览",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 16},
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 2},
+                {"color": "green", "value": 3}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {"expr": "count(up{namespace=\"nextcloud\"} == 1)"}
+        ]
+      }
+    ]
+  },
+  "overwrite": true
+}
