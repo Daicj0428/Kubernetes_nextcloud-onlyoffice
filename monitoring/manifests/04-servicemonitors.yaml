@@ -1,0 +1,48 @@
+---
+# ServiceMonitors — 让 Prometheus 自动发现并抓取 Exporter
+# 注意: label "release: kube-prometheus" 必须与 Prometheus Operator 的
+# serviceMonitorSelector 匹配，否则不会被识别
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mysql-exporter
+  namespace: nextcloud
+  labels:
+    release: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: mysql-exporter
+  endpoints:
+    - port: metrics
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-exporter
+  namespace: nextcloud
+  labels:
+    release: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: redis-exporter
+  endpoints:
+    - port: metrics
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nextcloud-exporter
+  namespace: nextcloud
+  labels:
+    release: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: nextcloud-exporter
+  endpoints:
+    - port: metrics
+      interval: 30s

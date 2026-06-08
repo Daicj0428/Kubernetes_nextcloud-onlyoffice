@@ -1,0 +1,55 @@
+---
+# Nextcloud Exporter Deployment + Service
+# 通过 Nextcloud API 采集应用层指标
+# GitHub: https://github.com/xperimental/nextcloud-exporter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-exporter
+  namespace: nextcloud
+  labels:
+    app: nextcloud-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud-exporter
+  template:
+    metadata:
+      labels:
+        app: nextcloud-exporter
+    spec:
+      containers:
+        - name: exporter
+          # 镜像: xperimental/nextcloud-exporter:latest
+          # 已推送至 Harbor: dai30.test.com/k8s/nextcloud-exporter:latest
+          image: xperimental/nextcloud-exporter:latest
+          env:
+            - name: NEXTCLOUD_SERVER
+              value: "http://nextcloud"
+            - name: NEXTCLOUD_USERNAME
+              value: "admin"
+            - name: NEXTCLOUD_PASSWORD
+              value: "admin123"
+            - name: NEXTCLOUD_LISTEN_ADDRESS
+              value: ":9205"
+            - name: NEXTCLOUD_TIMEOUT
+              value: "30s"
+          ports:
+            - containerPort: 9205
+              name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-exporter
+  namespace: nextcloud
+  labels:
+    app: nextcloud-exporter
+spec:
+  selector:
+    app: nextcloud-exporter
+  ports:
+    - name: metrics
+      port: 9205
+      targetPort: 9205

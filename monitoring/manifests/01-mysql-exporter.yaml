@@ -1,0 +1,49 @@
+---
+# MySQL Exporter Deployment + Service
+# 采集 MySQL 指标，连接到 nextcloud 的 mysql-master
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-exporter
+  namespace: nextcloud
+  labels:
+    app: mysql-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-exporter
+  template:
+    metadata:
+      labels:
+        app: mysql-exporter
+    spec:
+      containers:
+        - name: exporter
+          # 镜像可从官方拉取: prom/mysqld-exporter:latest
+          # 已推送至 Harbor: dai30.test.com/k8s/mysqld-exporter:latest
+          image: prom/mysqld-exporter:latest
+          args:
+            - "--mysqld.address=mysql-master:3306"
+            - "--mysqld.username=exporter"
+          env:
+            - name: MYSQLD_EXPORTER_PASSWORD
+              value: "exporterpass"
+          ports:
+            - containerPort: 9104
+              name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-exporter
+  namespace: nextcloud
+  labels:
+    app: mysql-exporter
+spec:
+  selector:
+    app: mysql-exporter
+  ports:
+    - name: metrics
+      port: 9104
+      targetPort: 9104

@@ -1,0 +1,49 @@
+---
+# Redis Exporter Deployment + Service
+# 采集 Redis 指标，连接到 nextcloud 的 redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-exporter
+  namespace: nextcloud
+  labels:
+    app: redis-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-exporter
+  template:
+    metadata:
+      labels:
+        app: redis-exporter
+    spec:
+      containers:
+        - name: exporter
+          # 镜像: oliver006/redis_exporter:latest
+          # 已推送至 Harbor: dai30.test.com/k8s/redis_exporter:latest
+          image: oliver006/redis_exporter:latest
+          env:
+            - name: REDIS_ADDR
+              value: "redis://redis:6379"
+            # 如果 Redis 有密码，取消注释并填写:
+            # - name: REDIS_PASSWORD
+            #   value: "password"
+          ports:
+            - containerPort: 9121
+              name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-exporter
+  namespace: nextcloud
+  labels:
+    app: redis-exporter
+spec:
+  selector:
+    app: redis-exporter
+  ports:
+    - name: metrics
+      port: 9121
+      targetPort: 9121

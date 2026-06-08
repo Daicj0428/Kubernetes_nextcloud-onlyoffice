@@ -1,0 +1,30 @@
+---
+# RBAC — 授权 monitoring namespace 的 prometheus-k8s ServiceAccount
+# 在 nextcloud namespace 中读取 services/endpoints/pods
+# 
+# 为什么需要: Prometheus 的 ServiceMonitor 发现机制需要跨 namespace 访问
+# Kubernetes API 来发现 target。没有此 RBAC，Prometheus 无法发现
+# nextcloud namespace 中的 ServiceMonitor 定义的目标。
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prometheus-k8s
+  namespace: nextcloud
+rules:
+  - apiGroups: [""]
+    resources: ["services", "endpoints", "pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prometheus-k8s
+  namespace: nextcloud
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prometheus-k8s
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s
+    namespace: monitoring
